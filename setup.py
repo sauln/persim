@@ -18,12 +18,12 @@ with open('README.md') as f:
 
 setup(name='persim',
       version=verstr,
-      description='Python implementation persistent images representation of persistence diagrams.',
+      description='Distances and representations of persistence diagrams',
       long_description=long_description,
       long_description_content_type="text/markdown",	
-      author='Nathaniel Saul',
-      author_email='nathaniel.saul@wsu.edu',
-      url='https://github.com/scikit-tda/persim',
+      author='Nathaniel Saul, Chris Tralie',
+      author_email='nat@riverasaul.com, chris.tralie@gmail.com',
+      url='https://persim.scikit-tda.org',
       license='MIT',
       packages=['persim'],
       include_package_data=True,
@@ -31,8 +31,17 @@ setup(name='persim',
         'scikit-learn',
         'numpy',
         'matplotlib',
-        'scipy'
+        'scipy',
+        'hopcroftkarp',
       ],
+      extras_require={ # use `pip install -e ".[testing]"``
+        'testing': [
+          'pytest' 
+        ],
+        'docs': [ # `pip install -e ".[docs]"``
+          'sktda_docs_config'
+        ]
+      },
       python_requires='>=2.7,!=3.1,!=3.2,!=3.3',
       classifiers=[
         'Development Status :: 3 - Alpha',
@@ -48,6 +57,7 @@ setup(name='persim',
         'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
+        'Programming Language :: Python :: 3.7',
       ],
-      keywords='persistent homology, persistence images, persistence diagrams, topology data analysis, algebraic topology, unsupervised learning'
+      keywords='persistent homology, persistence images, persistence diagrams, topology data analysis, algebraic topology, unsupervised learning, sliced wasserstein distance, bottleneck distance'
      )

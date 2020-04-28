@@ -5,7 +5,16 @@ python:
   - "3.5"
   - "3.6"
 
+
+matrix:
+  include:
+    - python: 3.7
+      dist: xenial
+      sudo: true
+
 install:
+  - pip install Cython 
+  - pip install ripser
   - pip install .
   - pip install pytest-cov
 

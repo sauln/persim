@@ -10,6 +10,7 @@ import matplotlib.pyplot as plt
 
 from sklearn.base import TransformerMixin
 
+__all__ = ["PersImage"]
 
 class PersImage(TransformerMixin):
     """ Initialize a persistence image generator.
@@ -22,7 +23,14 @@ class PersImage(TransformerMixin):
     spread : float
         Standard deviation of gaussian kernel
     specs : dict
-        Parameters for shape of image with respect to diagram domain. This is used if you would like images to have a particular range.
+        Parameters for shape of image with respect to diagram domain. This is used if you would like images to have a particular range. Shaped like 
+        ::
+        
+            {
+                "maxBD": float,
+                "minBD": float
+            }
+
     kernel_type : string or ...
         TODO: Implement this feature.
         Determine which type of kernel used in the convolution, or pass in custom kernel. Currently only implements Gaussian.
@@ -30,6 +38,12 @@ class PersImage(TransformerMixin):
         TODO: Implement this feature.
         Determine which type of weighting function used, or pass in custom weighting function.
         Currently only implements linear weighting.
+
+
+    Usage
+    ------
+
+
     """
 
     def __init__(
@@ -60,13 +74,20 @@ class PersImage(TransformerMixin):
 
         Parameters
         -----------
+
         diagrams : list of or singleton diagram, list of pairs. [(birth, death)]
             Persistence diagrams to be converted to persistence images. It is assumed they are in (birth, death) format. Can input a list of diagrams or a single diagram.
 
         """
-
+        # if diagram is empty, return empty image
+        if len(diagrams) == 0:
+            return np.zeros((self.nx, self.ny))
         # if first entry of first entry is not iterable, then diagrams is singular and we need to make it a list of diagrams
-        singular = not isinstance(diagrams[0][0], collections.Iterable)
+        try:
+            singular = not isinstance(diagrams[0][0], collections.Iterable)
+        except IndexError:
+            singular = False
+
         if singular:
             diagrams = [diagrams]
 
@@ -75,8 +96,10 @@ class PersImage(TransformerMixin):
 
         if not self.specs:
             self.specs = {
-                "maxBD": np.max([np.max(landscape) for landscape in landscapes]),
-                "minBD": np.min([np.min(landscape) for landscape in landscapes]),
+                "maxBD": np.max([np.max(np.vstack((landscape, np.zeros((1, 2))))) 
+                                 for landscape in landscapes] + [0]),
+                "minBD": np.min([np.min(np.vstack((landscape, np.zeros((1, 2))))) 
+                                 for landscape in landscapes] + [0]),
             }
         imgs = [self._transform(dgm) for dgm in landscapes]
 
@@ -87,9 +110,6 @@ class PersImage(TransformerMixin):
         return imgs
 
     def _transform(self, landscape):
-        """ Convert single diagram to a persistence image
-        """
-
         # Define an NxN grid over our landscape
         maxBD = self.specs["maxBD"]
         minBD = min(self.specs["minBD"], 0)  # at least show 0, maybe lower
@@ -129,7 +149,10 @@ class PersImage(TransformerMixin):
         # TODO: use self.weighting_type to choose function
 
         if landscape is not None:
-            maxy = np.max(landscape[:, 1])
+            if len(landscape) > 0:
+                maxy = np.max(landscape[:, 1])
+            else: 
+                maxy = 1
 
         def linear(interval):
             # linear function of y such that f(0) = 0 and f(max(y)) = 1
@@ -186,5 +209,4 @@ class PersImage(TransformerMixin):
 
         for i, img in enumerate(imgs):
             ax.imshow(img, cmap=plt.get_cmap("plasma"))
-            ax.axis('off')
-
+            ax.axis("off")
